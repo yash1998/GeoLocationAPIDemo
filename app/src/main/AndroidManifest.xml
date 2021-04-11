@@ -32,7 +32,10 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".FetchLocationBackgroundService"/>
+        <service
+            android:enabled="true"
+            android:exported="false"
+            android:name=".FetchLocationBackgroundService"/>
     </application>
 
 </manifest>

@@ -12,6 +12,9 @@ import java.util.*
 
 object PermissionsUtil {
 
+    const val START_SERVICE = "start_service"
+    const val STOP_SERVICE = "stop_service"
+
     fun askingPermissions(
         activityInstance: AppCompatActivity,
         permissions: Array<String>,

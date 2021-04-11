@@ -4,8 +4,6 @@ import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
 import android.location.Location
 import android.net.Uri
 import android.os.Build
@@ -24,8 +22,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnSuccessListener
-import java.io.IOException
-import java.util.*
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -53,8 +49,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap?) {
         map = googleMap
-        map?.setMinZoomPreference(13f)
-        map?.setMaxZoomPreference(15f)
+        map?.setMinZoomPreference(15f)
+        map?.setMaxZoomPreference(17f)
     }
 
     private fun markLocationOnMap(lat: Double?, lng: Double?) {
@@ -66,13 +62,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun stopLocationUpdate() {
         client?.removeLocationUpdates(locationCallback)
-        stopService(Intent(this@MainActivity, FetchLocationBackgroundService::class.java))
+        val intent = Intent(applicationContext, FetchLocationBackgroundService::class.java)
+        intent.apply {
+            action = PermissionsUtil.STOP_SERVICE
+        }
+        startService(intent)
     }
 
     private fun requestLocationUpdateBackground() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (applicationContext.checkSelfPermission(ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                startService(Intent(this@MainActivity, FetchLocationBackgroundService::class.java))
+                val intent = Intent(applicationContext, FetchLocationBackgroundService::class.java)
+                intent.apply {
+                    action = PermissionsUtil.START_SERVICE
+                }
+                startService(intent)
             } else {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri: Uri = Uri.fromParts("package", packageName, null)
@@ -127,7 +131,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                 markLocationOnMap(location?.latitude, location?.longitude)
                 Toast.makeText(
                     this@MainActivity,
-                    "Location Updated: " + PermissionsUtil.getAddress(this@MainActivity, location?.latitude, location?.longitude),
+                    "Location Updated: " + PermissionsUtil.getAddress(
+                        this@MainActivity,
+                        location?.latitude,
+                        location?.longitude
+                    ),
                     Toast.LENGTH_SHORT
                 ).show()
             }
